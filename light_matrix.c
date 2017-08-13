@@ -195,6 +195,7 @@ Mat* MatEye(Mat* mat)
 	}
 #endif
 	
+	MatZeros(mat);
 	for(i = 0 ; i < min(mat->row, mat->col) ; i++){
 		mat->element[i][i] = 1.0f;
 	}
