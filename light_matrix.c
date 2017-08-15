@@ -395,6 +395,11 @@ Mat* MatInv(Mat* src, Mat* dst)
 	MatCreate(&adj_mat, src->row, src->col);
 	MatAdj(src, &adj_mat);
 	det = MatDet(src);
+	
+	if(equal(det, 0.0f)){
+		printf("err, determinate is 0 for MatInv\n");
+		return NULL;
+	}
 
 	for(row = 0 ; row < src->row ; row++){
 		for(col = 0 ; col < src->col ; col++)
