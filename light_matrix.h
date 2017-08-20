@@ -23,7 +23,6 @@
 typedef struct  {
 	int row, col;
 	float **element;
-	unsigned char init;
 }Mat;
 
 Mat* MatCreate(Mat* mat, int row, int col);

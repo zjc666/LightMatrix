@@ -22,8 +22,8 @@
 #include <stdlib.h>
 
 #define MAT_LEGAL_CHECKING
-#define MAT_INIT_FLAG	0x5C
 
+#define min(a, b) ((a) > (b) ? (b) : (a))
 #define equal(a, b)	((a-b)<1e-7 && (a-b)>-(1e-7))
 
 /************************************************************************/
@@ -32,10 +32,10 @@
 
 void swap(int *a, int *b)
 {
-  int m;
-  m = *a;
-  *a = *b;
-  *b = m;
+	int m;
+	m = *a;
+	*a = *b;
+	*b = m;
 }
  
 void perm(int list[], int k, int m, int* p, Mat* mat, float* det) 
@@ -82,15 +82,6 @@ Mat* MatCreate(Mat* mat, int row, int col)
 {
 	int i;
 
-#ifdef MAT_LEGAL_CHECKING
-	if(mat->init == MAT_INIT_FLAG){
-		if(mat->row == row && mat->col == col)
-			return mat;
-		else
-			MatDelete(mat);
-	}
-#endif
-
 	mat->element = (float**)malloc(row * sizeof(float*));
 	if(mat->element == NULL){
 		printf("mat create fail!\n");
@@ -110,7 +101,6 @@ Mat* MatCreate(Mat* mat, int row, int col)
 
 	mat->row = row;
 	mat->col = col;
-	mat->init = MAT_INIT_FLAG;
 
 	return mat;
 }
@@ -119,17 +109,9 @@ void MatDelete(Mat* mat)
 {
 	int i;
 
-#ifdef MAT_LEGAL_CHECKING
-	if(mat->init != MAT_INIT_FLAG){
-		return ;
-	}
-#endif
-
 	for(i = 0 ; i<mat->row ; i++)
 		free(mat->element[i]);
 	free(mat->element);
-
-	mat->init = 0;
 }
 
 Mat* MatSetVal(Mat* mat, float* val)
@@ -168,13 +150,6 @@ Mat* MatZeros(Mat* mat)
 {
 	int row,col;
 
-#ifdef MAT_LEGAL_CHECKING
-	if(mat->init != MAT_INIT_FLAG){
-		printf("err check, none init matrix for MatZeros\n");
-		return NULL;
-	}
-#endif
-
 	for(row = 0 ; row < mat->row ; row++){
 		for(col = 0 ; col < mat->col ; col++){
 			mat->element[row][col] = 0.0f;
@@ -187,13 +162,6 @@ Mat* MatZeros(Mat* mat)
 Mat* MatEye(Mat* mat)
 {
 	int i;
-
-#ifdef MAT_LEGAL_CHECKING
-	if(mat->init != MAT_INIT_FLAG){
-		printf("err check, none init matrix for MatEye\n");
-		return NULL;
-	}
-#endif
 	
 	MatZeros(mat);
 	for(i = 0 ; i < min(mat->row, mat->col) ; i++){
@@ -321,6 +289,10 @@ float MatDet(Mat* mat)
 #endif
 
 	list = (int*)malloc(sizeof(int)*mat->col);
+	if(list == NULL){
+		printf("malloc list fail\n");
+		return NULL;
+	}
 	for(i = 0 ; i < mat->col ; i++)
 		list[i] = i;
 
@@ -391,21 +363,20 @@ Mat* MatInv(Mat* src, Mat* dst)
 		return NULL;
 	}
 #endif
-
 	MatCreate(&adj_mat, src->row, src->col);
 	MatAdj(src, &adj_mat);
 	det = MatDet(src);
-	
+
 	if(equal(det, 0.0f)){
 		printf("err, determinate is 0 for MatInv\n");
 		return NULL;
 	}
-
+	
 	for(row = 0 ; row < src->row ; row++){
 		for(col = 0 ; col < src->col ; col++)
 			dst->element[row][col] = adj_mat.element[row][col]/det;
 	}
-
+	
 	MatDelete(&adj_mat);
 
 	return dst;
